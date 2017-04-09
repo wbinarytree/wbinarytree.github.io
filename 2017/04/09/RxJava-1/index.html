@@ -3,14 +3,33 @@
 <head>
   <meta charset="utf-8">
   
-  <title>BinaryTree&#39;s blog</title>
+  <title>放弃RxBus，拥抱RxJava（一）：为什么避免使用EventBus/RxBus | BinaryTree&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="BinaryTree's blog">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="EventBus和Otto在之前作为Android组件间通信工具，简单方便十分受欢迎，但是也非常容易Abuse。大概有如下几个缺点：
+
+由于是Event,在发布Event的时候就要做好准备可能并没有人接受这个Event, Subscribe的时候也要做好准备可能永远不会收到Event。Event无论顺序还是时间上都某种程度上不太可控。如果你将数据寄托在Event上然后就直接在Android其他生命">
+<meta property="og:type" content="article">
+<meta property="og:title" content="放弃RxBus，拥抱RxJava（一）：为什么避免使用EventBus/RxBus">
+<meta property="og:url" content="http://yoursite.com/2017/04/09/RxJava-1/index.html">
 <meta property="og:site_name" content="BinaryTree's blog">
+<meta property="og:description" content="EventBus和Otto在之前作为Android组件间通信工具，简单方便十分受欢迎，但是也非常容易Abuse。大概有如下几个缺点：
+
+由于是Event,在发布Event的时候就要做好准备可能并没有人接受这个Event, Subscribe的时候也要做好准备可能永远不会收到Event。Event无论顺序还是时间上都某种程度上不太可控。如果你将数据寄托在Event上然后就直接在Android其他生命">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/2417399-ef00941c1cfd7ace.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/2417399-7608f7d805c23783.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/2417399-5612eee4ee9a61d2.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/2417399-00cf6db34e8b4c84.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/2417399-6da08e095b8d0899.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/2417399-379766ad920c95ee.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/2417399-810562495275f259.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/2417399-f008642da01d310f.gif?imageMogr2/auto-orient/strip">
+<meta property="og:updated_time" content="2017-04-09T16:29:18.544Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="BinaryTree's blog">
+<meta name="twitter:title" content="放弃RxBus，拥抱RxJava（一）：为什么避免使用EventBus/RxBus">
+<meta name="twitter:description" content="EventBus和Otto在之前作为Android组件间通信工具，简单方便十分受欢迎，但是也非常容易Abuse。大概有如下几个缺点：
+
+由于是Event,在发布Event的时候就要做好准备可能并没有人接受这个Event, Subscribe的时候也要做好准备可能永远不会收到Event。Event无论顺序还是时间上都某种程度上不太可控。如果你将数据寄托在Event上然后就直接在Android其他生命">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/2417399-ef00941c1cfd7ace.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
   
     <link rel="alternate" href="/atom.xml" title="BinaryTree&#39;s blog" type="application/atom+xml">
   
@@ -59,9 +78,7 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-RxJava-1" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-RxJava-1" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/04/09/RxJava-1/" class="article-date">
   <time datetime="2017-04-09T16:25:56.000Z" itemprop="datePublished">2017-04-09</time>
@@ -74,8 +91,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/04/09/RxJava-1/">放弃RxBus，拥抱RxJava（一）：为什么避免使用EventBus/RxBus</a>
+    <h1 class="article-title" itemprop="name">
+      放弃RxBus，拥抱RxJava（一）：为什么避免使用EventBus/RxBus
     </h1>
   
 
@@ -137,10 +154,9 @@
     </footer>
   </div>
   
-</article>
-
-
+    
   
+</article>
 
 </section>
         
