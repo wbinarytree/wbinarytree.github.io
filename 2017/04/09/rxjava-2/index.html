@@ -3,14 +3,30 @@
 <head>
   <meta charset="utf-8">
   
-  <title>BinaryTree&#39;s blog</title>
+  <title>放弃RxBus，拥抱RxJava（二）：Observable究竟如何封装数据？ | BinaryTree&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="BinaryTree's blog">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="上篇简单讲到了一些关于Event/Rx bus的优缺点。并且提到了如何“正确”使用RxJava，而不是使用RxBus来自己重新发明轮子。
+
+放弃RxBus，拥抱RxJava（一）：为什么避免使用EventBus/RxBus
+
+其中也讲到了一个简单使用 create() 方法来进行封装Observable。但也留下了许多坑，比如内存泄漏，不能Multicast(多个Subscriber订阅同一个Ob">
+<meta property="og:type" content="article">
+<meta property="og:title" content="放弃RxBus，拥抱RxJava（二）：Observable究竟如何封装数据？">
+<meta property="og:url" content="http://yoursite.com/2017/04/09/rxjava-2/index.html">
 <meta property="og:site_name" content="BinaryTree's blog">
+<meta property="og:description" content="上篇简单讲到了一些关于Event/Rx bus的优缺点。并且提到了如何“正确”使用RxJava，而不是使用RxBus来自己重新发明轮子。
+
+放弃RxBus，拥抱RxJava（一）：为什么避免使用EventBus/RxBus
+
+其中也讲到了一个简单使用 create() 方法来进行封装Observable。但也留下了许多坑，比如内存泄漏，不能Multicast(多个Subscriber订阅同一个Ob">
+<meta property="og:updated_time" content="2017-04-09T16:33:52.127Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="BinaryTree's blog">
+<meta name="twitter:title" content="放弃RxBus，拥抱RxJava（二）：Observable究竟如何封装数据？">
+<meta name="twitter:description" content="上篇简单讲到了一些关于Event/Rx bus的优缺点。并且提到了如何“正确”使用RxJava，而不是使用RxBus来自己重新发明轮子。
+
+放弃RxBus，拥抱RxJava（一）：为什么避免使用EventBus/RxBus
+
+其中也讲到了一个简单使用 create() 方法来进行封装Observable。但也留下了许多坑，比如内存泄漏，不能Multicast(多个Subscriber订阅同一个Ob">
   
     <link rel="alternate" href="/atom.xml" title="BinaryTree&#39;s blog" type="application/atom+xml">
   
@@ -59,9 +75,7 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-rxjava-2" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-rxjava-2" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/04/09/rxjava-2/" class="article-date">
   <time datetime="2017-04-09T16:32:37.000Z" itemprop="datePublished">2017-04-09</time>
@@ -74,8 +88,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/04/09/rxjava-2/">放弃RxBus，拥抱RxJava（二）：Observable究竟如何封装数据？</a>
+    <h1 class="article-title" itemprop="name">
+      放弃RxBus，拥抱RxJava（二）：Observable究竟如何封装数据？
     </h1>
   
 
@@ -125,90 +139,19 @@
     </footer>
   </div>
   
-</article>
-
-
+    
+<nav id="article-nav">
   
-    <article id="post-RxJava-1" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/04/09/RxJava-1/" class="article-date">
-  <time datetime="2017-04-09T16:25:56.000Z" itemprop="datePublished">2017-04-09</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/04/09/RxJava-1/">放弃RxBus，拥抱RxJava（一）：为什么避免使用EventBus/RxBus</a>
-    </h1>
+    <a href="/2017/04/09/RxJava-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">放弃RxBus，拥抱RxJava（一）：为什么避免使用EventBus/RxBus</div>
+    </a>
   
+</nav>
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>EventBus和Otto在之前作为Android组件间通信工具，简单方便十分受欢迎，但是也非常容易Abuse。大概有如下几个缺点：</p>
-<ul>
-<li>由于是Event,在发布Event的时候就要做好准备可能并没有人接受这个Event, Subscribe的时候也要做好准备可能永远不会收到Event。Event无论顺序还是时间上都某种程度上不太可控。如果你将数据寄托在Event上然后就直接在Android其他生命周期方法中直接使用这个数据或成员变量。那么很有可能你会得到NPE。</li>
-<li>EventBus看似将你的程序解耦，但是又有些过了。我们常常使用EventBus传数据，这已经是Dependency级别的数据而不是一个可以被解耦出来的模块。这样就造成了过多EventBus的代码会造成代码结构混乱，难以测试和追踪，违背了解耦的初衷。这时如果有意或无意的造成了Nested Event。那情况会更糟。</li>
-</ul>
-<p>由于EventBus的种种缺点，以及后面RxJava的出现。很多人都开始使用RxJava来取代EventBus。甚至Otto的官方介绍里都写到：</p>
-<blockquote>
-<h2 id="Deprecated"><a href="#Deprecated" class="headerlink" title="Deprecated!"></a>Deprecated!</h2><p>This project is deprecated in favor of <a href="https://github.com/ReactiveX/RxJava" target="_blank" rel="external">RxJava</a> and<br><a href="https://github.com/ReactiveX/RxAndroid" target="_blank" rel="external">RxAndroid</a>. These projects permit the same event-driven<br>programming model as Otto, but they’re more capable and offer better control of threading.</p>
-<p>If you’re looking for guidance on migrating from Otto to Rx, <a href="http://blog.kaush.co/2014/12/24/implementing-an-event-bus-with-rxjava-rxbus/" target="_blank" rel="external">this post</a><br>is a good start.</p>
-</blockquote>
-<p>链接是一个教你怎么使用RxJava来自己手动写一个RxBus来代替EventBus的文章。虽然看起来是在用RxJava。但是实际上却仍然在用EventBus。甚至这个封装其实也并没有GreenRobot或者Otto来的好。<br>我们看看Jake Wharton对RxBus的评价：<br><img src="http://upload-images.jianshu.io/upload_images/2417399-ef00941c1cfd7ace.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""><br><em>我想”RxBus”唯一的好处就是他是一个Rx的入门毒品。否则的话，你要么就不是在用Rx，要么你需要更加惯用的Rx资源</em> (渣翻译见谅)</p>
-<p>再来一个GitHub的：<br><img src="http://upload-images.jianshu.io/upload_images/2417399-7608f7d805c23783.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
-<p>subscribeActual部分我们先不考虑。然而Jake指出最好不要使用Relay来“重新发明”Event Bus.</p>
-<p>这里看图说话：<br>Jake Wharton在GOTO 2016 上的讲座中提到，我们正常的Android编程是这样的：<br><img src="http://upload-images.jianshu.io/upload_images/2417399-5612eee4ee9a61d2.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""><br>我们像一个中间人一样。<br>而使用RxJava。 我们的结构，更像这样<br><img src="http://upload-images.jianshu.io/upload_images/2417399-00cf6db34e8b4c84.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""><br>我们使用RxJava来直接把组件相连，对所接受到的数据作出反应，所谓的 “Reactive”。<br>而使用Eventbus? Jake 没说， 我自己画一个：</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/2417399-6da08e095b8d0899.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""><br>我们作为一个中间人，传递消息。EventBus作为另一个中间人。帮我们传递消息。（这也就是所谓的“看似解耦”）</p>
-<p>再打个比方，虽然我们将EventBus翻译成时间总线，但是其实总线就是Bus也就是公交车。而RxJava更像一个专车，Uber或者滴滴。他直接链接你的两个或多个需要通信的类。传输数据，当然你可以做一个很大的专车，穿梭在所有类之间，也就是所谓的RxBus。所以在这里为什么放弃RxBus也就不言而喻了不是？</p>
-<p>那么，问题来了？</p>
-<h4 id="怎样才是正确（正常？）的RxJava使用方式？"><a href="#怎样才是正确（正常？）的RxJava使用方式？" class="headerlink" title="怎样才是正确（正常？）的RxJava使用方式？"></a>怎样才是正确（正常？）的RxJava使用方式？</h4><p>其实Jake 也在GitHub的讨论上给出了一个答案：<br><img src="http://upload-images.jianshu.io/upload_images/2417399-379766ad920c95ee.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
-<p>所以应该是，每当你想发布一个Event在EventBus时，直接暴露一个Observable出来。每当你想接受一个Event时，找到这个Observable并且Subscribe他。</p>
-<p>这样做的好处是什么？</p>
-<ul>
-<li>目标和地点都很明确。你的Subscriber明确的知道他Subscribe的是谁，而且明确的知道我需要作出什么反应。这也正是RxJava的核心“响应式编程”。</li>
-<li>由于使用了Observable,对于异常处理将会非常方便。而且还有功能强大全面的Operator来辅助你。</li>
-<li>虽然看起来耦合性有所增加。但是这是必要的，上面也说过，EventBus虽然在代码上看似解耦。其实他们还是联系在一起的。而我们这样直接暴露Observable给需要的其他类，这完成了1 -&gt; 1/N的链接，而不需要EventBus这个中间人来传递消息/事件，而且保证我们需要的事件一定会直接到达。</li>
-</ul>
-<p>####我们来举个例子</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/2417399-810562495275f259.PNG?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
-<p>上下两个Fragment，上面的一个EditText，下面的一个TextView。上面的EditText变化的时候下面的TextView也跟着变化。</p>
-<p>先把EditText的TextChangedListener封装在Observable里：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">        stringObservable = Observable.create(e -&gt; editText.addTextChangedListener(new TextWatcher() &#123;</div><div class="line">            @Override</div><div class="line">            public void beforeTextChanged(CharSequence s, int start, int count, int after) &#123;</div><div class="line"></div><div class="line">            &#125;</div><div class="line"></div><div class="line">            @Override</div><div class="line">            public void onTextChanged(CharSequence s, int start, int before, int count) &#123;</div><div class="line">                e.onNext(s.toString());</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            @Override</div><div class="line">            public void afterTextChanged(Editable s) &#123;</div><div class="line"></div><div class="line">            &#125;</div><div class="line">        &#125;));</div><div class="line"></div><div class="line">/**</div><div class="line">***</div><div class="line">*/</div><div class="line">    //Expose Observable</div><div class="line">    public Observable&lt;String&gt; getEditTextObservable() &#123;</div><div class="line">        return stringObservable;</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
-<p>不习惯自己封装可以使用RxBinding :<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">stringObservable = RxTextView.textChangeEvents(editText)</div><div class="line">                             .map(event -&gt; event.text().toString());</div></pre></td></tr></table></figure></p>
-<p>再从我们的TextViewFragment中 取到这个封装好的Observable:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public void onStart() &#123;</div><div class="line">    super.onStart();</div><div class="line">    FragmentEditText fragment = (FragmentEditText) getFragmentManager().findFragmentByTag(FragmentEditText.TAG);</div><div class="line">    if(fragment != null)&#123;</div><div class="line">        fragment.getStringObservable().subscribe(s -&gt; textView.setText(s));</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>来看看效果：</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/2417399-f008642da01d310f.gif?imageMogr2/auto-orient/strip" alt=""></p>
-<p>当然，这里还有个问题</p>
-<ul>
-<li>由于我们将editText封装在Observable里，无论是create()方法还是使用RxBinding，都会持有这个View的强引用。造成内存泄漏。所以我们一定要在最后加入dispose()方法来释放。所以我推荐使用RxBinding，他已经帮我们在dispose()方法里写好了解除Listener的方法。</li>
-<li>因为并没有使用publish操作符，导致多个Subscriber的时候还是有些许问题。可以考虑直接加入.share().</li>
-</ul>
-<p>具体我们如何讲常用的数据/Callback封装到Observable中。我会在接下来的文章中写到。</p>
-<blockquote>
-<p> <a href="https://wbinarytree.github.io/2017/04/09/rxjava-2/" target="_blank" rel="external">第二篇链接</a></p>
-</blockquote>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/04/09/RxJava-1/" data-id="cj1awsgb00001pgw1di8t37fb" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/RxJava/">RxJava</a></li></ul>
-
-    </footer>
-  </div>
   
 </article>
-
-
-  
 
 </section>
         
