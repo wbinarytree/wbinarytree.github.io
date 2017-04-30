@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>拥抱RxJava（番外篇）：关于RxJava的Tips &amp; Tricks | BinaryTree&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前言：
+起初写 拥抱RxJava 系列文章。只是因为看到很多人在使用RxJava时候，并没有很正确的理解Reactive Programming。仅仅在项目中使用了Retrofit的Rx Adapter或者使用了一点点RxBus就写道自己的项目中用了RxJava，并以此传道。我觉得这样是不好的。所以写了这一系列更好的介绍RxJava。 但是可能个人的语言能力确实略差，每次都会让读者有些许误解。今天">
+<meta property="og:type" content="article">
+<meta property="og:title" content="拥抱RxJava（番外篇）：关于RxJava的Tips & Tricks">
+<meta property="og:url" content="http://yoursite.com/2017/04/30/rxjava5/index.html">
+<meta property="og:site_name" content="BinaryTree's blog">
+<meta property="og:description" content="前言：
+起初写 拥抱RxJava 系列文章。只是因为看到很多人在使用RxJava时候，并没有很正确的理解Reactive Programming。仅仅在项目中使用了Retrofit的Rx Adapter或者使用了一点点RxBus就写道自己的项目中用了RxJava，并以此传道。我觉得这样是不好的。所以写了这一系列更好的介绍RxJava。 但是可能个人的语言能力确实略差，每次都会让读者有些许误解。今天">
+<meta property="og:updated_time" content="2017-04-30T18:56:25.728Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="拥抱RxJava（番外篇）：关于RxJava的Tips & Tricks">
+<meta name="twitter:description" content="前言：
+起初写 拥抱RxJava 系列文章。只是因为看到很多人在使用RxJava时候，并没有很正确的理解Reactive Programming。仅仅在项目中使用了Retrofit的Rx Adapter或者使用了一点点RxBus就写道自己的项目中用了RxJava，并以此传道。我觉得这样是不好的。所以写了这一系列更好的介绍RxJava。 但是可能个人的语言能力确实略差，每次都会让读者有些许误解。今天">
+  
+    <link rel="alternate" href="/atom.xml" title="BinaryTree&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">BinaryTree&#39;s blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-rxjava5" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/04/30/rxjava5/" class="article-date">
+  <time datetime="2017-04-30T15:34:25.000Z" itemprop="datePublished">2017-04-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      拥抱RxJava（番外篇）：关于RxJava的Tips &amp; Tricks
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h2><blockquote>
+<p>起初写 拥抱RxJava 系列文章。只是因为看到很多人在使用RxJava时候，并没有很正确的理解Reactive Programming。仅仅在项目中使用了Retrofit的Rx Adapter或者使用了一点点RxBus就写道自己的项目中用了RxJava，并以此传道。我觉得这样是不好的。所以写了这一系列更好的介绍RxJava。 但是可能个人的语言能力确实略差，每次都会让读者有些许误解。今天这篇我们就放松一下，分享一下我使用RxJava时的一些Tips &amp; Tricks (本文在为指定背景的情况下，使用的是 RxJava 2.x 版本。 )</p>
+</blockquote>
+<p>这篇文章很多借鉴了这个presentation中的一些技巧： <a href="https://www.youtube.com/watch?v=QdmkXL7XikQ" target="_blank" rel="external">Common RxJava Mistakes (视频需要科学上网)
+</a></p>
+<h4 id="0-RxJava-不是网络请求库，不是线程库，RxJava是响应式编程在JVM上的一种实现方式！"><a href="#0-RxJava-不是网络请求库，不是线程库，RxJava是响应式编程在JVM上的一种实现方式！" class="headerlink" title="0 RxJava 不是网络请求库，不是线程库，RxJava是响应式编程在JVM上的一种实现方式！"></a>0 RxJava 不是网络请求库，不是线程库，RxJava是响应式编程在JVM上的一种实现方式！</h4><p>很多人使用RxJava仅仅是因为线程切换方便，或者是因为Retrofit提供了这样一个炫酷的返回方式，或者仅仅是因为RxJava这种链式调用很炫酷，又或是因为大家都用RxJava我不用怕跟不上节奏。<br>如果你使用RxJava仅仅是因为如上几个原因，我建议你放弃RxJava。因为RxJava给你带来的坑将远多于你从RxJava中获得的便利。曾经有一个老爷爷说过一句话：</p>
+<blockquote>
+<p>With Great Power Comes Great Responsibility<br>力量越大，责任越大</p>
+</blockquote>
+<p>RxJava能做的远不仅仅是切换线程或者简单的变换(<code>map()</code>，<code>filter()</code>等等)。所以当然我这篇不可能覆盖所有的 RxJava 的坑。如果你想使用RxJava，回头问一下自己使用这个库的初衷。</p>
+<h4 id="1-observeOn-vs-subscribeOn"><a href="#1-observeOn-vs-subscribeOn" class="headerlink" title="1 observeOn vs subscribeOn"></a>1 observeOn vs subscribeOn</h4><p>这两个操作符可能对很多人是最常用的两个了。 然而这中间也有很多大坑在这里。</p>
+<h5 id="1-1-subscribeOn-控制上游，observeOn控制下游"><a href="#1-1-subscribeOn-控制上游，observeOn控制下游" class="headerlink" title="1.1 subscribeOn 控制上游，observeOn控制下游"></a>1.1 subscribeOn 控制上游，observeOn控制下游</h5><p>很多人误以为 <code>subscribeOn</code> 控制的是Observable的生成的线程而<code>observeOn</code>控制的是 <code>subscribe()</code> 方法发生的线程。 当然，这点你们可以怪扔物线大神，毕竟他在他对RxJava最著名的帖子中写道：</p>
+<blockquote>
+<ul>
+<li>subscribeOn(): 指定 subscribe() 所发生的线程，即 Observable.OnSubscribe 被激活时所处的线程。或者叫做事件产生的线程。 * observeOn(): 指定 Subscriber 所运行在的线程。或者叫做事件消费的线程。                                            ——扔物线</li>
+</ul>
+</blockquote>
+<p>这个观点不能说是错的（这点我稍后再将），但是更多的是 subscribeOn控制整个上游，而observeOn控制整个下游。 举个例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">Observable.just(&quot;1&quot;,&quot;2&quot;,&quot;3&quot;)</div><div class="line">    .map(x -&gt; x.length())</div><div class="line">    .subscribeOn(Schedulers.io())</div><div class="line">    .flatMap(x -&gt; Observable.just(x,&quot;pause&quot;))</div><div class="line">    .observeOn(Schedulers.computation())</div><div class="line">    .map(x -&gt; someHeavyCaculation(x))</div><div class="line">    .subscribe(x -&gt; Log.d(TAG, x));</div></pre></td></tr></table></figure>
+<p>这段代码中各个操作符是在哪些线程中进行的？<br>我们看下答案：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">Observable.just(&quot;1&quot;,&quot;2&quot;,&quot;3&quot;) //IO 线程</div><div class="line">    .map(x -&gt; x.length()) //IO 线程</div><div class="line">    .subscribeOn(Schedulers.io())</div><div class="line">    .flatMap(x -&gt; Observable.just(x,&quot;pause&quot;)) //IO 线程</div><div class="line">    .observeOn(Schedulers.computation())</div><div class="line">    .map(x -&gt; someHeavyCaculation(x)) //computation 线程</div><div class="line">    .subscribe(x -&gt; Log.d(TAG, x)); //computation 线程</div></pre></td></tr></table></figure>
+<p>所以我们看到了，<code>observeOn</code> 后面的所有操作都会在这个线程工作。<code>subscribeOn</code> 会从这个Observable生成一直到遇到其他 <code>observeOn</code>。所以 <code>observeOn</code> 和 <code>subscribeOn</code> 的位置非常关键。</p>
+<p>当然，这点问题 扔物线大神在文章中也详细的讲到了：</p>
+<blockquote>
+<p>因为 observeOn() 指定的是 Subscriber 的线程，而这个 Subscriber 并不是（严格说应该为『不一定是』，但这里不妨理解为『不是』）subscribe() 参数中的 Subscriber ，而是 observeOn() 执行时的当前 Observable 所对应的 Subscriber ，即它的直接下级 Subscriber 。换句话说，observeOn() 指定的是它之后的操作所在的线程。因此如果有多次切换线程的需求，只要在每个想要切换线程的位置调用一次 observeOn() 即可。                        ——扔物线</p>
+</blockquote>
+<p>只不过很多人看帖子看一半，扔物线大神把这最重要的部分放到了<code>lift()</code>后面讲，很多人看完枯燥的<code>lift()</code>后，选择性忽视了最后关于 <code>Scheduler</code>非常关键的这部分。</p>
+<h5 id="1-2-subscribeOn只发生一次，observeOn可以使用多次"><a href="#1-2-subscribeOn只发生一次，observeOn可以使用多次" class="headerlink" title="1.2 subscribeOn只发生一次，observeOn可以使用多次"></a>1.2 subscribeOn只发生一次，observeOn可以使用多次</h5><p>如果程序需要多次切换线程，使用多次<code>observeOn</code>是完全可以的。 而subscribeOn只有最上方的<code>subscribeOn</code>会起作用。这点扔物线大神的文章也补充过，大家可以回头再重温一下。</p>
+<h5 id="1-3-不是所有操作符都会在默认线程执行"><a href="#1-3-不是所有操作符都会在默认线程执行" class="headerlink" title="1.3 不是所有操作符都会在默认线程执行"></a>1.3 不是所有操作符都会在默认线程执行</h5><p>很多操作符的默认执行线程并不是当前线程，这类操作符有一个特征就是会提供带有 Scheduler 参数的重载方法，比如 <code>interval</code>。 <code>interval</code> 会默认在computation线程执行，如果你在后面加上<code>subscribeOn</code>。 他还是会在computation线程执行，你只有在重载方法里加入其他 Scheduler，他才会在其他线程执行。如果你仔细看过 RxJava 的 JavaDoc。 他都会明确写出这个操作符的默认工作线程。</p>
+<h4 id="2-如果可能，避免使用Subject-当然包括RxBus"><a href="#2-如果可能，避免使用Subject-当然包括RxBus" class="headerlink" title="2 如果可能，避免使用Subject 当然包括RxBus!!"></a>2 如果可能，避免使用Subject 当然包括RxBus!!</h4><p>subject 作为Observable的结合体，在使用时非常方便。但是在使用时，很多时候并不尽人意。</p>
+<h5 id="2-1-Subject-的行为是不可预期的"><a href="#2-1-Subject-的行为是不可预期的" class="headerlink" title="2.1 Subject 的行为是不可预期的"></a>2.1 Subject 的行为是不可预期的</h5><p>Subject 由于暴露 <code>onNext</code> 方法。非常难控制。任何有这个subject引用的对象都可以使用这个方法传输数据，任何订阅了subject的人都可以接收到这个数据。<br>这导致你订阅Subject后几乎不清楚数据来源到底是谁。甚至也不知道你收到的到底是什么数据。这也是为什么我强烈抵制 RxBus 的一大原因。<br>Subject 由于自己是Observable， 他遵循Observable Contract。 如果其中某个事件出现异常，onError触发，那么这个Subject将再也不能使用。当然这点可以使用 Jake Wharton的 RxRelay来解决。 RxRelay就是一个没有onComplete和onError的Subject。<br>所以如果你的程序中必须使用Subject, 推荐将其设为 private field并且对外只暴露他的Observable形式。</p>
+<h5 id="2-2-Subject-默认是Hot-Observable"><a href="#2-2-Subject-默认是Hot-Observable" class="headerlink" title="2.2 Subject 默认是Hot Observable"></a>2.2 Subject 默认是Hot Observable</h5><p>关于 hot/cold Observable我在这篇文章中详细的解释过： <a href="http://www.jianshu.com/p/f5f327c8b612" target="_blank" rel="external">拥抱RxJava（三）：关于Observable的冷热，常见的封装方式以及误区</a></p>
+<p>Subject默认是热的，也就是说你发送的信息接收者是否接受的到是不一定的。是需要根据情况分析的。具体可以看我关于hot/cold Observable 的文章。</p>
+<h5 id="2-3-Again。-不要在继续使用RxBus了"><a href="#2-3-Again。-不要在继续使用RxBus了" class="headerlink" title="2.3 Again。 不要在继续使用RxBus了"></a>2.3 Again。 不要在继续使用RxBus了</h5><p>RxBus 几乎都是基于Subject的再次封装。使得他不仅拥有了Subject是所有缺点还加入了很多缺点，比如他不是类型安全的。 我见过太多的RxBus封装都只是一个接受Object类型的Subject。这个问题当然也有很多RxBus通过 键值对或<code>ofType()</code>等等操作解决。再比如RxBus更容易造成内存泄漏（因为需要将所有事件和订阅者存储在Subject中，）。更多欢迎再次看一下我的第一篇关于RxJava的文章： <a href="http://www.jianshu.com/p/61631134498e" target="_blank" rel="external">放弃RxBus，拥抱RxJava（一）</a></p>
+<p>前几天我在Reddit上看到一个人的回复：</p>
+<blockquote>
+<p>I think EventBus on android is popular because people don’t know how to share a java object reference between android components like a Fragment and an Activity, or 2 Activities and so on. So basically I think people don’t know how 2 Activites can observe the same object for data changes which I think comes from the fact that we still don’t know how to architect our apps properly.</p>
+<p>我认为 EventBus在Android上火爆的原因是人们不知道怎么去在Android组件，例如Activity/Fragment之间共享一个Java对象的引用。</p>
+</blockquote>
+<p>想一想，自己使用EventBus是不是也是这个原因呢？</p>
+<h4 id="3-如果你还在使用RxJava-1-x-建议尽快升级2-x版本"><a href="#3-如果你还在使用RxJava-1-x-建议尽快升级2-x版本" class="headerlink" title="3 如果你还在使用RxJava 1.x 建议尽快升级2.x版本"></a>3 如果你还在使用RxJava 1.x 建议尽快升级2.x版本</h4><p>RxJava 2.x 更新了很多新内容。比如将Backpressure机制分离出来做成Flowable等等。 而且RxJava 1.x马上要寿终正寝，进入不再更新的模式（2017年6月）。所以还在使用RxJava 1.X 的同学们尽快更新吧。<br>如果你仍然处于某种原因，必须使用RxJava 1.x， 那么也千万不要使用<code>Observable.create(Observable.OnSubscribe&lt;T&gt; f)</code> 操作符(现已经被Deprecated)创建Observable。使用其他工厂方法或者直接升级为RxJava 2.x (现已经更新到2.1.0)才是正确的选择。</p>
+<h4 id="4-关于操作符"><a href="#4-关于操作符" class="headerlink" title="4 关于操作符"></a>4 关于操作符</h4><h5 id="4-1-尽量避免过多的使用操作符，能合并的操作符尽量合并。"><a href="#4-1-尽量避免过多的使用操作符，能合并的操作符尽量合并。" class="headerlink" title="4.1 尽量避免过多的使用操作符，能合并的操作符尽量合并。"></a>4.1 尽量避免过多的使用操作符，能合并的操作符尽量合并。</h5><p>这里的合并不是指使用ObservableTransformer合并。而是指在逻辑上合并，比如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">Observable.just(&quot;Hello&quot;,&quot;World&quot;,&quot;RxJava&quot;)</div><div class="line">          .map(x -&gt; x.length())</div><div class="line">          .map(x -&gt; x + 2)</div><div class="line">          .subscribe(/**********/)</div></pre></td></tr></table></figure>
+<p>这里的两个<code>map</code>明显可以写成一个。 我们知道，每个操作符都会根据操作符的特性生成新的Observable，订阅他的上游然后给下游发送数据，避免使用过多的操作符可以降低内存抖动。<br>所以我不是很推荐使用ObservableTransformer来合并出来一个<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">ObservableTransformer applyThread = upstream -&gt;</div><div class="line">    upstream.subscribeOn(Schedulers.io())</div><div class="line">    .observeOn(AndroidSchedulers.mainThread());</div></pre></td></tr></table></figure></p>
+<p>这样虽然在写法上更简单了。但是损失了observeOn的灵活性还额外增加OverHead。得不偿失。当然，如果我们使用Transformer来进行模块解耦，这当然是非常值得的。详细可以参考我的上一篇文章：<br><a href="http://www.jianshu.com/p/42d77c577ff4" target="_blank" rel="external">动手做一个Full Rx App</a></p>
+<h5 id="4-2-flatMap并不保证发射顺序。"><a href="#4-2-flatMap并不保证发射顺序。" class="headerlink" title="4.2 flatMap并不保证发射顺序。"></a>4.2 flatMap并不保证发射顺序。</h5><p><code>flatMap</code>是将他每个得到的item转换成一个Observable，然后通过<code>merge</code>融合这些Observable。但是每个对应的Observable发射出去的一个或多个项目并不是完全有序的。如果想要保证发射顺序，使用<code>concatMap</code>。同理，<code>merge</code>操作符也不保证顺序，如果需要有序，使用<code>concat</code>。</p>
+<h5 id="4-3-如果不是必要，不要在flatMap中使用过多的操作符。"><a href="#4-3-如果不是必要，不要在flatMap中使用过多的操作符。" class="headerlink" title="4.3 如果不是必要，不要在flatMap中使用过多的操作符。"></a>4.3 如果不是必要，不要在flatMap中使用过多的操作符。</h5><p>我们刚才说了，每个item都会生成一个新的Observable，每个操作符也会。所以如果你的flatMap中有其他操作符，比如下面的代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">Observable.fromIterable(list)</div><div class="line">    .flatMap(x -&gt; Observable.just(&quot;x&quot;,x,&quot;y&quot;)</div><div class="line">        .map(item -&gt; &quot;item&quot; + item))</div><div class="line">    .subscribe();</div></pre></td></tr></table></figure></p>
+<p>如果你的list中有上万个item。 那么你将会调用这个map上万次，多生成上万个ObservableMap来进行这个操作。 我们可以简单的消除这个OverHead。 将map拿出来，如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">Observable.fromIterable(list)</div><div class="line">    .flatMap(x -&gt; Observable.just(&quot;x&quot;,x,&quot;y&quot;))</div><div class="line">    .map(item -&gt; &quot;item&quot; + item)</div><div class="line">    .subscribe();</div></pre></td></tr></table></figure></p>
+<p>这样<code>flatMap</code>后的Observable会统一进行管理。省去了那上万个ObservableMap。</p>
+<h5 id="4-4-如果不是必要，不要自己写-Observable-的操作符。"><a href="#4-4-如果不是必要，不要自己写-Observable-的操作符。" class="headerlink" title="4.4 如果不是必要，不要自己写 Observable 的操作符。"></a>4.4 如果不是必要，不要自己写 Observable 的操作符。</h5><p>Observable的每个操作符都有着很复杂的逻辑，就连很多RxJava的专家都会出错。如果你真的想写自己的操作符，我建议你首先阅读这个文章：<br><a href="https://github.com/ReactiveX/RxJava/wiki/Writing-operators-for-2.0" target="_blank" rel="external">Writing operators for 2.0
+</a><br>详细的介绍了如何写操作符，要遵顼哪些规则。 顺便一提，这个文章有将近1700行，还有三个主要模块处于TBD阶段，并没有完全补充。写操作符的难度可想而知。</p>
+<h4 id="小彩蛋：RxJava和Kotlin我最近碰到的一个坑"><a href="#小彩蛋：RxJava和Kotlin我最近碰到的一个坑" class="headerlink" title="小彩蛋：RxJava和Kotlin我最近碰到的一个坑"></a>小彩蛋：RxJava和Kotlin我最近碰到的一个坑</h4><p>最近使用RxJava和Kotlin。 我将<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">startWith(idleState());</div></pre></td></tr></table></figure></p>
+<p>写成了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">startWith&#123;idleState()&#125;;</div></pre></td></tr></table></figure></p>
+<p>在我的IDE几乎肉眼难以分辨的区别。由于kotlin的lambda规则，<code>{}</code> 把我需要的变量解析成了lambda表达式，又由于正好是单参数的lambda，可以省略参数转换为 it 的写法。导致我这句仍然可以编译，但重载了错误的操作符。导致整个链条崩溃。那些年和我说kotlin语法更为安全的人你过来我给你加个BUFF！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/04/30/rxjava5/" data-id="cj2524lpv000158w10txv3lzs" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/04/23/rxjava4/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">拥抱RxJava（四）：动手做一个Full Rx的 注册界面</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RxJava/">RxJava</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Android/" style="font-size: 10px;">Android</a> <a href="/tags/RxJava/" style="font-size: 10px;">RxJava</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/04/30/rxjava5/">拥抱RxJava（番外篇）：关于RxJava的Tips &amp; Tricks</a>
+          </li>
+        
+          <li>
+            <a href="/2017/04/23/rxjava4/">拥抱RxJava（四）：动手做一个Full Rx的 注册界面</a>
+          </li>
+        
+          <li>
+            <a href="/2017/04/09/rxjava-3/">拥抱RxJava（三）：关于Observable的冷热，常见的封装方式以及误区</a>
+          </li>
+        
+          <li>
+            <a href="/2017/04/09/rxjava-2/">放弃RxBus，拥抱RxJava（二）：Observable究竟如何封装数据？</a>
+          </li>
+        
+          <li>
+            <a href="/2017/04/09/RxJava-1/">放弃RxBus，拥抱RxJava（一）：为什么避免使用EventBus/RxBus</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 BinaryTree WANG<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
